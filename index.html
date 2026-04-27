@@ -4,113 +4,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskFlow AI - History & Logs</title>
+    <title>TaskFlow AI - Pro Edition</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
-        :root {
-            --bg-main: #fcfcfd;
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-        }
-
-        body {
-            background-color: var(--bg-main);
-            color: #1e293b;
-            overflow: hidden;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .blob {
-            position: absolute;
-            width: 500px;
-            height: 500px;
-            background: linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
-            filter: blur(80px);
-            border-radius: 50%;
-            z-index: -1;
-            animation: move 25s infinite alternate;
-        }
-
-        @keyframes move {
-            from { transform: translate(-10%, -10%); }
-            to { transform: translate(20%, 20%); }
-        }
-
-        .glass {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
+        :root { --bg-main: #fcfcfd; --primary: #6366f1; }
+        body { background-color: var(--bg-main); color: #1e293b; overflow: hidden; font-family: 'Inter', sans-serif; }
+        .blob { position: absolute; width: 500px; height: 500px; background: linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%); filter: blur(80px); border-radius: 50%; z-index: -1; animation: move 25s infinite alternate; }
+        @keyframes move { from { transform: translate(-10%, -10%); } to { transform: translate(20%, 20%); } }
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .column-width { min-width: 340px; width: 340px; }
+        .card-item { transition: all 0.2s ease; }
+        .card-item:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.05); }
+        .ai-gradient { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); }
+        .tag-pill { background: #eef2ff; color: #4338ca; font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
         ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-
-        .column-width {
-            min-width: 340px;
-            width: 340px;
-        }
-
-        /* Yeni Sütun Butonu Alanı */
-        .add-column-wrapper {
-            min-width: 300px;
-            padding-top: 10px;
-        }
-
-        .card-item {
-            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
-        }
-
-        .card-item:hover {
-            transform: translateY(-4px) scale(1.01);
-            box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.05);
-        }
-
-        .sortable-ghost {
-            opacity: 0.2;
-            background: #6366f1 !important;
-            border: 2px dashed #6366f1 !important;
-            border-radius: 1.5rem;
-        }
-
-        .ai-gradient {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-        }
-
         .timeline-container { position: relative; padding-left: 24px; }
-        .timeline-container::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 8px;
-            bottom: 8px;
-            width: 2px;
-            background: #f1f5f9;
-        }
-
+        .timeline-container::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 2px; background: #f1f5f9; }
         .timeline-item { position: relative; padding-bottom: 24px; }
-        .timeline-dot {
-            position: absolute;
-            left: -28px;
-            top: 6px;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #cbd5e1;
-            border: 2px solid white;
-            box-shadow: 0 0 0 4px #f8fafc;
-        }
-
-        .timeline-dot.active {
-            background: #6366f1;
-            box-shadow: 0 0 0 4px #eef2ff;
-        }
+        .timeline-dot { position: absolute; left: -28px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; border: 2px solid white; box-shadow: 0 0 0 4px #f8fafc; }
+        .timeline-dot.active { background: #6366f1; box-shadow: 0 0 0 4px #eef2ff; }
     </style>
 </head>
 
@@ -119,150 +36,93 @@
     <div class="blob" style="top: -10%; left: -10%;"></div>
     <div class="blob" style="bottom: -10%; right: -10%; animation-delay: -5s;"></div>
 
-    <div id="auth-screen"
-        class="fixed inset-0 bg-white/40 backdrop-blur-xl z-[100] flex items-center justify-center p-4 transition-all duration-700">
-        <div
-            class="bg-white/80 p-10 md:p-14 rounded-[3rem] shadow-2xl w-full max-w-md text-center border border-white relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-2 ai-gradient"></div>
-            <div class="inline-flex items-center justify-center w-20 h-20 bg-indigo-50 rounded-3xl mb-8 text-4xl shadow-inner">
-                🎯</div>
-            <h1 class="text-4xl font-[800] text-slate-900 mb-3 tracking-tight">TaskFlow
-                <span class="text-transparent bg-clip-text ai-gradient">AI</span></h1>
-            <p class="text-slate-500 mb-10 font-medium">İş akışınızı geçmişiyle takip edin.</p>
-
-            <div class="space-y-4">
-                <input type="text" id="username-input" placeholder="Adınız Soyadınız"
-                    class="w-full px-6 py-5 border-2 border-slate-100 rounded-2xl focus:border-indigo-500/30 focus:ring-4 focus:ring-indigo-500/5 outline-none text-lg transition-all bg-white/50 font-medium text-center">
-                <button type="button" id="btn-login-action" class="w-full ai-gradient text-white font-bold py-5 rounded-2xl hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-indigo-200 text-lg tracking-wide uppercase">
-                    Başlat
-                </button>
-            </div>
+    <div id="auth-screen" class="fixed inset-0 bg-white/40 backdrop-blur-xl z-[100] flex items-center justify-center p-4">
+        <div class="bg-white/80 p-14 rounded-[3rem] shadow-2xl w-full max-w-md text-center border border-white">
+            <h1 class="text-4xl font-black mb-8 italic text-slate-900">TASKFLOW <span class="text-indigo-600">AI</span></h1>
+            <input type="text" id="username-input" placeholder="Adınız" class="w-full px-6 py-5 border-2 rounded-2xl mb-4 outline-none focus:border-indigo-500 text-center font-bold">
+            <button id="btn-login-action" class="w-full ai-gradient text-white font-bold py-5 rounded-2xl shadow-xl uppercase transition-all active:scale-95">Sistemi Aç</button>
         </div>
     </div>
 
     <div id="main-app" class="hidden flex-col h-full opacity-0 transition-opacity duration-700">
-        <header
-            class="glass px-10 py-5 flex justify-between items-center shrink-0 z-50 sticky top-0 border-b border-slate-200/50">
-            <div class="flex items-center gap-4">
-                <div class="ai-gradient p-2.5 rounded-2xl text-white shadow-lg shadow-indigo-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                    </svg>
-                </div>
-                <div>
-                    <h1 class="text-xl font-black text-slate-900 tracking-tighter leading-none mb-1">TASKFLOW
-                        <span class="text-indigo-600">AI</span></h1>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gelişmiş Takip</span>
-                </div>
+        <header class="glass px-10 py-5 flex justify-between items-center z-50 border-b">
+            <div class="flex items-center gap-3">
+                <div class="ai-gradient p-2 rounded-xl text-white font-black italic">T</div>
+                <h1 class="text-xl font-black tracking-tighter">TASKFLOW PRO</h1>
             </div>
-
             <div class="flex items-center gap-6">
-                <button id="btn-reports" class="px-6 py-3 ai-gradient text-white rounded-2xl font-bold text-sm transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-200">
-                    ✨ AKILLI ANALİZ
-                </button>
-                <div class="h-8 w-px bg-slate-200"></div>
-                <div class="flex items-center gap-4">
-                    <div class="text-right">
-                        <p id="user-name-display" class="font-bold text-slate-800 text-sm leading-none mb-1">Misafir</p>
-                        <span class="text-[10px] text-indigo-500 font-bold uppercase tracking-wider">Aktif</span>
-                    </div>
-                    <div id="user-avatar"
-                        class="w-11 h-11 rounded-2xl bg-indigo-50 border-2 border-indigo-100 text-indigo-600 flex items-center justify-center font-black">
-                        U</div>
+                <button id="btn-reports" class="px-5 py-2.5 ai-gradient text-white rounded-xl font-bold text-xs uppercase tracking-wider">Akıllı Analiz</button>
+                <div class="flex items-center gap-3">
+                    <div class="text-right"><p id="user-name-display" class="font-bold text-sm leading-none"></p></div>
+                    <button id="btn-logout" class="text-slate-300 hover:text-red-500 transition"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg></button>
                 </div>
-                <button id="btn-logout" class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-500 transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" /></svg>
-                </button>
             </div>
         </header>
 
-        <main id="board-container" class="flex-1 overflow-x-auto p-10 flex items-start gap-8 select-none">
-            </main>
+        <main id="board-container" class="flex-1 overflow-x-auto p-10 flex items-start gap-8"></main>
     </div>
 
-    <div id="modal-card"
-        class="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[200] hidden items-center justify-center p-4">
-        <div class="bg-white rounded-[3rem] shadow-2xl w-full max-w-xl overflow-hidden transform transition-all scale-95"
-            id="modal-content">
-            <div class="px-10 py-8 border-b border-slate-100 flex justify-between items-center">
-                <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Görev Detayları</h2>
-                <button onclick="closeModal()" class="text-slate-300 hover:text-slate-600 transition text-4xl leading-none">&times;</button>
+    <div id="modal-card" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[200] hidden items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden">
+            <div class="px-10 py-6 border-b flex justify-between items-center">
+                <h2 class="text-xl font-black">Görev Detayları</h2>
+                <button onclick="closeModal()" class="text-slate-300 text-3xl">&times;</button>
             </div>
-            <div class="p-10 space-y-8">
-                <div>
-                    <div class="flex justify-between items-center mb-3">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Görev Adı</label>
-                        <button id="btn-ai-magic" class="text-[10px] ai-gradient text-white px-4 py-1.5 rounded-full font-bold">✨ AI ÜRET</button>
+            <div class="p-10 grid grid-cols-2 gap-6">
+                <div class="col-span-2">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase">Başlık</label>
+                        <button id="btn-ai-magic" class="text-[9px] ai-gradient text-white px-3 py-1 rounded-full font-bold">✨ AI İLE DOLDUR</button>
                     </div>
-                    <input type="text" id="task-title-input" class="w-full px-6 py-4 border-2 border-slate-100 rounded-2xl outline-none focus:border-indigo-500/30 bg-slate-50/50 text-lg font-bold">
+                    <input type="text" id="task-title-input" class="w-full px-5 py-3 border rounded-xl outline-none focus:border-indigo-500 font-bold">
+                </div>
+                
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase">Sorumlu</label>
+                    <input type="text" id="task-assignee-input" placeholder="İsim Soyisim" class="w-full px-5 py-3 border rounded-xl outline-none focus:border-indigo-500 text-sm">
+                </div>
+                
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase">Son Tarih</label>
+                    <input type="date" id="task-deadline-input" class="w-full px-5 py-3 border rounded-xl outline-none focus:border-indigo-500 text-sm">
                 </div>
 
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Açıklama</label>
-                    <textarea id="task-desc-input" rows="4" class="w-full px-6 py-5 border-2 border-slate-100 rounded-2xl outline-none focus:border-indigo-500/30 bg-slate-50/50 text-slate-600 font-medium"></textarea>
+                <div class="col-span-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase">Etiket</label>
+                    <input type="text" id="task-tag-input" placeholder="Örn: Yazılım" class="w-full px-5 py-3 border rounded-xl outline-none focus:border-indigo-500 text-sm font-bold text-indigo-600">
                 </div>
 
-                <div class="flex flex-col gap-4">
-                    <div id="task-timestamps"
-                        class="flex justify-between items-center text-[11px] text-slate-400 border-t border-slate-100 pt-6">
+                <div class="col-span-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase">Detaylar</label>
+                    <textarea id="task-desc-input" rows="3" class="w-full px-5 py-3 border rounded-xl outline-none focus:border-indigo-500 text-sm"></textarea>
+                </div>
+
+                <div class="col-span-2 flex justify-between items-center pt-4 border-t">
+                    <div class="flex gap-2">
+                        <button id="btn-task-delete" class="text-red-500 font-bold text-sm px-3">Sil</button>
+                        <button id="btn-show-history" class="text-indigo-500 font-bold text-sm px-3 border-l">Geçmiş</button>
                     </div>
-                    <div class="flex justify-between items-center pt-2">
-                        <div class="flex gap-3">
-                            <button id="btn-task-delete" class="text-red-400 font-bold text-sm px-4 py-2 hover:bg-red-50 rounded-xl transition">Sil</button>
-                            <button id="btn-show-history" class="text-indigo-500 font-bold text-sm px-4 py-2 hover:bg-indigo-50 rounded-xl transition flex items-center gap-2">🕒 Geçmişi Gör</button>
-                        </div>
-                        <div class="flex gap-3">
-                            <button onclick="closeModal()" class="px-6 py-3 font-bold text-slate-400">Vazgeç</button>
-                            <button id="btn-task-save" class="bg-slate-900 text-white px-10 py-4 rounded-2xl font-bold shadow-xl">Kaydet</button>
-                        </div>
+                    <div class="flex gap-2">
+                        <button onclick="closeModal()" class="px-6 py-2 font-bold text-slate-400 text-sm">Vazgeç</button>
+                        <button id="btn-task-save" class="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold">Kaydet</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="modal-history"
-        class="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[300] hidden items-center justify-center p-4">
-        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden transform transition-all scale-95"
-            id="history-content">
-            <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-indigo-50/20">
-                <h3 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                    <span class="text-indigo-500">🕒</span> Etkinlik Günlüğü
-                </h3>
-                <button onclick="closeHistoryModal()" class="text-slate-300 hover:text-slate-600 transition text-3xl leading-none">&times;</button>
+    <div id="modal-history" class="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[300] hidden items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden">
+            <div class="px-8 py-6 border-b flex justify-between items-center bg-indigo-50/30">
+                <h3 class="text-lg font-black italic">ETKİNLİK GÜNLÜĞÜ</h3>
+                <button onclick="closeHistoryModal()" class="text-slate-300 text-3xl">&times;</button>
             </div>
-            <div id="history-list" class="flex-1 overflow-y-auto p-8 space-y-1 timeline-container"></div>
-            <div class="p-6 bg-slate-50 text-center">
-                <button onclick="closeHistoryModal()" class="text-sm font-bold text-slate-500 hover:text-slate-800">Kapat</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-analysis"
-        class="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[200] hidden items-center justify-center p-4">
-        <div class="bg-white rounded-[3rem] shadow-2xl w-full max-w-2xl overflow-hidden transform transition-all scale-95"
-            id="analysis-content">
-            <div class="px-10 py-8 border-b border-slate-100 flex justify-between items-center bg-indigo-50/30">
-                <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">AI Analiz Raporu</h2>
-                <button onclick="closeAnalysisModal()" class="text-slate-300 hover:text-slate-600 transition text-4xl leading-none">&times;</button>
-            </div>
-            <div class="p-10">
-                <div id="analysis-loading" class="flex flex-col items-center py-10">
-                    <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                    <p class="font-bold text-slate-800 mt-4 italic">Verileriniz işleniyor...</p>
-                </div>
-                <div id="analysis-text" class="hidden text-slate-600 leading-relaxed max-h-[300px] overflow-y-auto italic"></div>
-                <div class="mt-8 flex justify-end">
-                    <button onclick="closeAnalysisModal()" class="bg-slate-900 text-white px-8 py-3 rounded-2xl font-bold">Kapat</button>
-                </div>
-            </div>
+            <div id="history-list" class="flex-1 overflow-y-auto p-8 timeline-container"></div>
         </div>
     </div>
 
     <script>
-        const apiKey = ""; 
+        const apiKey = ""; // Gemini API Key
 
         let appData = {
             user: null,
@@ -277,185 +137,102 @@
 
         let currentTarget = { cardId: null, colId: null };
 
-        const saved = localStorage.getItem('taskflow_v2_history');
-        if (saved) appData = JSON.parse(saved);
+        const load = () => {
+            const saved = localStorage.getItem('taskflow_pro_v3');
+            if (saved) appData = JSON.parse(saved);
+        };
+        const persist = () => localStorage.setItem('taskflow_pro_v3', JSON.stringify(appData));
 
-        function persist() {
-            localStorage.setItem('taskflow_v2_history', JSON.stringify(appData));
-        }
-
-        function formatFullDate(iso) {
-            if (!iso) return '-';
-            const d = new Date(iso);
-            return d.toLocaleString('tr-TR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
-        }
-
-        function getTimeAgo(iso) {
-            if (!iso) return '';
-            const seconds = Math.floor((new Date() - new Date(iso)) / 1000);
-            if (seconds < 60) return 'az önce';
-            const minutes = Math.floor(seconds / 60);
-            if (minutes < 60) return `${minutes} dk önce`;
-            const hours = Math.floor(minutes / 60);
-            if (hours < 24) return `${hours} saat önce`;
-            return formatFullDate(iso);
-        }
-
-        // --- AUTH ---
         document.getElementById('btn-login-action').onclick = () => {
             const val = document.getElementById('username-input').value.trim();
-            if (val.length < 2) return;
-            appData.user = val;
-            persist();
-            startApp();
+            if (val) { appData.user = val; persist(); startApp(); }
         };
 
         function startApp() {
-            if (!appData.user) return;
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('main-app').classList.replace('hidden', 'flex');
-            setTimeout(() => document.getElementById('main-app').classList.replace('opacity-0', 'opacity-100'), 50);
             document.getElementById('user-name-display').innerText = appData.user;
-            document.getElementById('user-avatar').innerText = appData.user.charAt(0).toUpperCase();
+            setTimeout(() => document.getElementById('main-app').style.opacity = '1', 50);
             renderBoard();
         }
 
-        // --- NEW COLUMN LOGIC ---
-        function addNewColumn() {
-            const colName = prompt("Yeni sütun adını giriniz:");
-            if (!colName || colName.trim() === "") return;
-
-            const colId = 'col-' + Date.now();
-            appData.columns[colId] = {
-                id: colId,
-                title: colName.toUpperCase(),
-                cardIds: []
-            };
-            appData.columnOrder.push(colId);
-            persist();
-            renderBoard();
-        }
-
-        // --- BOARD RENDER ---
         function renderBoard() {
             const container = document.getElementById('board-container');
             container.innerHTML = '';
-
             appData.columnOrder.forEach(colId => {
                 const col = appData.columns[colId];
                 const colEl = document.createElement('div');
-                colEl.className = 'column-width glass rounded-[2.5rem] flex flex-col h-full border border-white/60 shadow-sm overflow-hidden shrink-0';
-                colEl.dataset.id = colId;
-                
+                colEl.className = 'column-width glass rounded-[2.5rem] flex flex-col h-full shrink-0 overflow-hidden';
                 colEl.innerHTML = `
-                    <div class="p-8 flex justify-between items-center drag-handle cursor-move">
-                        <div class="flex items-center gap-3">
-                            <div class="w-1.5 h-6 rounded-full ai-gradient"></div>
-                            <h2 class="font-extrabold text-slate-800 text-[11px] tracking-widest uppercase">${col.title}</h2>
-                        </div>
-                        <div class="flex items-center gap-2">
-                             <span class="bg-white/80 px-3 py-1 rounded-xl text-[10px] font-black text-slate-500">${col.cardIds.length}</span>
-                        </div>
+                    <div class="p-7 flex justify-between items-center font-black text-[10px] tracking-widest text-slate-400">
+                        <span>${col.title}</span>
+                        <span class="bg-white px-2 py-1 rounded-lg text-indigo-500 shadow-sm">${col.cardIds.length}</span>
                     </div>
-                    <div class="card-drop-zone flex-1 px-5 pb-5 space-y-4 overflow-y-auto" data-col-id="${colId}"></div>
-                    <div class="px-5 pb-8">
-                        <button onclick="openModal(null, '${colId}')" class="w-full py-4 bg-white/60 text-indigo-600 font-extrabold rounded-2xl text-[10px] uppercase tracking-widest border border-white hover:bg-white transition-all">+ GÖREV EKLE</button>
-                    </div>
+                    <div class="card-drop-zone flex-1 px-4 pb-4 space-y-4 overflow-y-auto" data-col-id="${colId}"></div>
+                    <div class="p-4"><button onclick="openModal(null, '${colId}')" class="w-full py-4 bg-white/50 rounded-2xl text-[10px] font-black text-indigo-500 hover:bg-white transition-all">+ YENİ GÖREV</button></div>
                 `;
-
+                
                 const dropZone = colEl.querySelector('.card-drop-zone');
-                col.cardIds.forEach(cardId => {
-                    const card = appData.cards[cardId];
-                    if (card) {
-                        const cardEl = document.createElement('div');
-                        cardEl.className = 'card-item bg-white p-6 rounded-3xl border border-slate-100 cursor-pointer shadow-sm relative overflow-hidden';
-                        cardEl.dataset.id = cardId;
-                        cardEl.innerHTML = `
-                            <div class="flex flex-col gap-2">
-                                <h3 class="font-extrabold text-slate-800 text-sm leading-snug">${card.title}</h3>
-                                <p class="text-[11px] text-slate-400 line-clamp-2 font-medium">${card.desc || ''}</p>
-                                <div class="mt-2 pt-2 border-t border-slate-50 flex justify-between items-center">
-                                    <span class="text-[9px] font-bold text-slate-300 uppercase">🕒 ${getTimeAgo(card.updatedAt)}</span>
-                                </div>
+                col.cardIds.forEach(id => {
+                    const card = appData.cards[id];
+                    if(!card) return;
+                    const cardEl = document.createElement('div');
+                    cardEl.className = 'card-item bg-white p-6 rounded-[1.8rem] border border-slate-100 cursor-pointer shadow-sm';
+                    cardEl.dataset.id = id;
+                    cardEl.innerHTML = `
+                        <div class="flex flex-col gap-2">
+                            ${card.tag ? `<div><span class="tag-pill">${card.tag}</span></div>` : ''}
+                            <h3 class="font-bold text-slate-800 text-sm leading-snug">${card.title}</h3>
+                            <div class="flex flex-wrap gap-3 mt-3 pt-3 border-t border-slate-50">
+                                ${card.assignee ? `<span class="text-[10px] text-slate-500 font-medium flex items-center gap-1">👤 ${card.assignee}</span>` : ''}
+                                ${card.deadline ? `<span class="text-[10px] font-bold ${new Date(card.deadline) < new Date() ? 'text-red-500' : 'text-slate-400'} flex items-center gap-1">📅 ${card.deadline}</span>` : ''}
                             </div>
-                        `;
-                        cardEl.onclick = () => openModal(card, colId);
-                        dropZone.appendChild(cardEl);
-                    }
+                        </div>
+                    `;
+                    cardEl.onclick = () => openModal(card, colId);
+                    dropZone.appendChild(cardEl);
                 });
                 container.appendChild(colEl);
             });
-
-            // "Yeni Sütun Ekle" Butonunu ekle
-            const addColWrapper = document.createElement('div');
-            addColWrapper.className = 'add-column-wrapper shrink-0';
-            addColWrapper.innerHTML = `
-                <button onclick="addNewColumn()" class="w-full h-24 border-2 border-dashed border-slate-300 rounded-[2.5rem] flex items-center justify-center gap-2 text-slate-400 hover:text-indigo-500 hover:border-indigo-300 transition-all font-bold group">
-                    <span class="text-2xl group-hover:scale-125 transition-transform">+</span>
-                    <span>YENİ SÜTUN EKLE</span>
-                </button>
-            `;
-            container.appendChild(addColWrapper);
-
-            initInteractions();
+            initSortable();
         }
 
-        function initInteractions() {
-            new Sortable(document.getElementById('board-container'), {
-                animation: 250, handle: '.drag-handle', draggable: '.column-width',
-                onEnd: () => {
-                    appData.columnOrder = Array.from(document.getElementById('board-container').querySelectorAll('.column-width')).map(el => el.dataset.id);
-                    persist();
-                }
-            });
-
+        function initSortable() {
             document.querySelectorAll('.card-drop-zone').forEach(zone => {
                 new Sortable(zone, {
-                    group: 'tasks', animation: 250, ghostClass: 'sortable-ghost',
+                    group: 'tasks', animation: 200,
                     onEnd: (evt) => {
                         const cardId = evt.item.dataset.id;
-                        const fromColId = evt.from.dataset.colId;
-                        const toColId = evt.to.dataset.colId;
-
-                        if (fromColId !== toColId) {
-                            const fromTitle = appData.columns[fromColId].title;
-                            const toTitle = appData.columns[toColId].title;
-                            const timestamp = new Date().toISOString();
-                            
+                        const fromCol = evt.from.dataset.colId;
+                        const toCol = evt.to.dataset.colId;
+                        
+                        if(fromCol !== toCol) {
+                            const now = new Date().toISOString();
                             appData.cards[cardId].history.push({
                                 type: 'move',
-                                msg: `${fromTitle} → ${toTitle}`,
-                                time: timestamp
+                                msg: `${appData.columns[fromCol].title} → ${appData.columns[toCol].title}`,
+                                time: now
                             });
-                            appData.cards[cardId].updatedAt = timestamp;
                         }
 
                         document.querySelectorAll('.card-drop-zone').forEach(z => {
                             appData.columns[z.dataset.colId].cardIds = Array.from(z.children).map(c => c.dataset.id);
                         });
-                        persist();
-                        renderBoard();
+                        persist(); renderBoard();
                     }
                 });
             });
         }
 
-        // --- MODAL ACTIONS ---
         window.openModal = (card, colId) => {
             currentTarget = { cardId: card?.id || null, colId };
             document.getElementById('task-title-input').value = card?.title || '';
             document.getElementById('task-desc-input').value = card?.desc || '';
+            document.getElementById('task-assignee-input').value = card?.assignee || '';
+            document.getElementById('task-deadline-input').value = card?.deadline || '';
+            document.getElementById('task-tag-input').value = card?.tag || '';
             document.getElementById('btn-task-delete').style.display = card ? 'block' : 'none';
-            document.getElementById('btn-show-history').style.display = card ? 'flex' : 'none';
-            
-            const ts = document.getElementById('task-timestamps');
-            if (card) {
-                ts.innerHTML = `
-                    <span>Oluşturulma: <b>${formatFullDate(card.createdAt)}</b></span>
-                    <span>Güncelleme: <b>${formatFullDate(card.updatedAt)}</b></span>
-                `;
-            } else { ts.innerHTML = ''; }
-
+            document.getElementById('btn-show-history').style.display = card ? 'block' : 'none';
             document.getElementById('modal-card').classList.replace('hidden', 'flex');
         };
 
@@ -470,13 +247,18 @@
                 const card = appData.cards[currentTarget.cardId];
                 card.title = title;
                 card.desc = document.getElementById('task-desc-input').value;
-                card.updatedAt = now;
-                card.history.push({ type: 'edit', msg: 'İçerik düzenlendi', time: now });
+                card.assignee = document.getElementById('task-assignee-input').value;
+                card.deadline = document.getElementById('task-deadline-input').value;
+                card.tag = document.getElementById('task-tag-input').value;
+                card.history.push({ type: 'edit', msg: 'Görev güncellendi', time: now });
             } else {
                 const id = 'card-' + Date.now();
                 appData.cards[id] = {
-                    id, title, desc: document.getElementById('task-desc-input').value,
-                    createdAt: now, updatedAt: now,
+                    id, title, 
+                    desc: document.getElementById('task-desc-input').value,
+                    assignee: document.getElementById('task-assignee-input').value,
+                    deadline: document.getElementById('task-deadline-input').value,
+                    tag: document.getElementById('task-tag-input').value,
                     history: [{ type: 'create', msg: 'Görev oluşturuldu', time: now }]
                 };
                 appData.columns[currentTarget.colId].cardIds.push(id);
@@ -486,23 +268,15 @@
 
         document.getElementById('btn-show-history').onclick = () => {
             const card = appData.cards[currentTarget.cardId];
-            if (!card) return;
             const list = document.getElementById('history-list');
             list.innerHTML = '';
-            const sortedHistory = [...card.history].sort((a,b) => new Date(b.time) - new Date(a.time));
-            sortedHistory.forEach((log, index) => {
+            [...card.history].reverse().forEach((log, i) => {
                 const item = document.createElement('div');
                 item.className = 'timeline-item';
-                let icon = log.type === 'move' ? '🚀' : (log.type === 'create' ? '✨' : '📝');
                 item.innerHTML = `
-                    <div class="timeline-dot ${index === 0 ? 'active' : ''}"></div>
-                    <div class="flex items-start gap-3">
-                        <span class="text-base">${icon}</span>
-                        <div>
-                            <p class="text-xs font-black text-slate-400 uppercase tracking-tighter">${formatFullDate(log.time)}</p>
-                            <p class="text-sm font-bold text-slate-700 leading-tight mt-0.5">${log.msg}</p>
-                        </div>
-                    </div>
+                    <div class="timeline-dot ${i === 0 ? 'active' : ''}"></div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">${new Date(log.time).toLocaleString('tr-TR')}</p>
+                    <p class="text-sm font-bold text-slate-700">${log.msg}</p>
                 `;
                 list.appendChild(item);
             });
@@ -511,63 +285,34 @@
 
         window.closeHistoryModal = () => document.getElementById('modal-history').classList.replace('flex', 'hidden');
 
-        // --- AI FEATURES (Placeholder) ---
-        async function fetchGemini(prompt, sys = "") {
-            if(!apiKey) return "API Key ayarlanmadı.";
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+        document.getElementById('btn-ai-magic').onclick = async () => {
+            const title = document.getElementById('task-title-input').value;
+            if (!title || !apiKey) return;
+            const prompt = `"${title}" görevi için: 1) Çok kısa bir açıklama yaz. 2) Bu görev için en uygun TEK KELİMELİK bir kategori/etiket belirle. Aralarında '|' işareti olsun.`;
             try {
-                const res = await fetch(url, {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        contents: [{parts: [{text: prompt}]}],
-                        systemInstruction: {parts: [{text: sys}]}
-                    })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
                 const data = await res.json();
-                return data.candidates?.[0]?.content?.parts?.[0]?.text;
-            } catch(e) { return null; }
-        }
-
-        document.getElementById('btn-ai-magic').onclick = async () => {
-            const title = document.getElementById('task-title-input').value.trim();
-            if (!title) return;
-            const res = await fetchGemini(`"${title}" görevi için profesyonel açıklama yaz.`, "Türkçe ve kısa olsun.");
-            if (res) document.getElementById('task-desc-input').value = res;
+                const [desc, tag] = data.candidates[0].content.parts[0].text.split('|');
+                document.getElementById('task-desc-input').value = desc.trim();
+                document.getElementById('task-tag-input').value = tag.trim().replace('#', '');
+            } catch (e) { alert("AI Hatası: API Key kontrol edin."); }
         };
-
-        document.getElementById('btn-reports').onclick = async () => {
-            document.getElementById('analysis-text').classList.add('hidden');
-            document.getElementById('analysis-loading').classList.remove('hidden');
-            document.getElementById('modal-analysis').classList.replace('hidden', 'flex');
-            
-            let summary = "";
-            appData.columnOrder.forEach(id => {
-                const col = appData.columns[id];
-                summary += `${col.title}: ${col.cardIds.length} görev. `;
-            });
-            const report = await fetchGemini(`Şu tabloyu yorumla: ${summary}`, "Sen bir CEO'sun. Türkçe konuş.");
-            
-            document.getElementById('analysis-loading').classList.add('hidden');
-            if (report) {
-                document.getElementById('analysis-text').innerText = report;
-                document.getElementById('analysis-text').classList.remove('hidden');
-            }
-        };
-
-        window.closeAnalysisModal = () => document.getElementById('modal-analysis').classList.replace('flex', 'hidden');
 
         document.getElementById('btn-task-delete').onclick = () => {
             const { cardId, colId } = currentTarget;
-            appData.columns[colId].cardIds = appData.columns[colId].cardIds.filter(x => x !== cardId);
+            appData.columns[colId].cardIds = appData.columns[colId].cardIds.filter(id => id !== cardId);
             delete appData.cards[cardId];
             persist(); renderBoard(); closeModal();
         };
 
         document.getElementById('btn-logout').onclick = () => { localStorage.clear(); location.reload(); };
 
+        load();
         if (appData.user) startApp();
     </script>
 </body>
-
 </html>
