@@ -35,18 +35,41 @@
             border: 1px solid rgba(225, 29, 72, 0.1);
         }
 
-        .column-width { min-width: 340px; width: 340px; }
+        .column-width { min-width: 340px; width: 340px; transition: background-color 0.3s ease; }
         
+        /* Kart Stilleri ve Sürükleme Efektleri */
         .card-item {
-            transition: all 0.2s ease;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
             border-left: 4px solid transparent;
+            cursor: grab;
         }
+
+        .card-item:active { cursor: grabbing; }
 
         .card-item:hover {
             transform: translateY(-4px);
-            box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.1);
+            box-shadow: 0 10px 20px -5px rgba(225, 29, 72, 0.15);
             border-left-color: var(--koc-red);
         }
+
+        /* SortableJS Sürükleme Efektleri */
+        .sortable-ghost {
+            opacity: 0.4;
+            background: #fff1f2 !important;
+            border: 2px dashed var(--koc-red) !important;
+            box-shadow: none !important;
+            transform: scale(0.95);
+        }
+
+        .sortable-drag {
+            opacity: 1 !important;
+            transform: rotate(3deg) scale(1.05) !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+            background: white !important;
+        }
+
+        .card-drop-zone { min-height: 100px; transition: padding 0.2s; }
+        .card-drop-zone.sorting-active { background: rgba(225, 29, 72, 0.02); border-radius: 1.5rem; }
 
         .timeline-container { position: relative; padding-left: 24px; }
         .timeline-container::before {
@@ -103,6 +126,7 @@
             border-color: var(--koc-red);
             color: var(--koc-red);
             background: white;
+            box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.05);
         }
     </style>
 </head>
@@ -114,7 +138,7 @@
             <h1 class="text-4xl font-black text-slate-900 mb-8 tracking-tight">K-<span class="text-rose-600">Agile</span></h1>
             <input type="text" id="username-input" placeholder="Adınız Soyadınız"
                 class="w-full px-6 py-5 border-2 border-slate-100 rounded-2xl focus:border-rose-500 outline-none text-lg text-center mb-4">
-            <button id="btn-login-action" class="w-full koc-gradient text-white font-bold py-5 rounded-2xl shadow-xl">Sisteme Giriş</button>
+            <button id="btn-login-action" class="w-full koc-gradient text-white font-bold py-5 rounded-2xl shadow-xl hover:opacity-90 active:scale-95 transition-all">Sisteme Giriş</button>
         </div>
     </div>
 
@@ -126,7 +150,7 @@
                 </div>
                 <div>
                     <h1 class="text-xl font-black text-slate-900 tracking-tighter leading-none mb-1">K-<span class="text-rose-600">AGILE</span></h1>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Koç Sistem Kurumsal İş Takibi</span>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Koç Sistem Kurumsal</span>
                 </div>
             </div>
             <div class="flex items-center gap-6">
@@ -152,7 +176,6 @@
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Görev Tanımı</label>
                     <input type="text" id="task-title-input" class="w-full px-6 py-4 border-2 border-slate-100 rounded-2xl outline-none focus:border-rose-500 bg-slate-50/50 text-lg font-bold">
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Kategori</label>
@@ -167,15 +190,12 @@
                         <input type="date" id="task-deadline-input" class="w-full px-4 py-3 border-2 border-slate-100 rounded-xl outline-none focus:border-rose-500 bg-slate-50/50 text-sm font-bold">
                     </div>
                 </div>
-
                 <div>
                     <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Açıklama</label>
                     <textarea id="task-desc-input" rows="3" class="w-full px-6 py-4 border-2 border-slate-100 rounded-2xl outline-none focus:border-rose-500 bg-slate-50/50 text-slate-600 font-medium"></textarea>
                 </div>
-
                 <div class="pt-6 border-t border-slate-100">
                     <div id="task-timestamps" class="flex justify-between items-center text-[11px] text-slate-400 mb-6"></div>
-                    
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <button id="btn-task-delete" class="btn-action bg-rose-50 text-rose-600 hover:bg-rose-100">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -222,20 +242,17 @@
         };
 
         let currentTarget = { cardId: null, colId: null };
-        const saved = localStorage.getItem('kagile_v4_data');
+        const saved = localStorage.getItem('kagile_v5_data');
         if (saved) appData = JSON.parse(saved);
 
-        function persist() { localStorage.setItem('kagile_v4_data', JSON.stringify(appData)); }
+        function persist() { localStorage.setItem('kagile_v5_data', JSON.stringify(appData)); }
 
         function formatDateTime(iso) {
             if (!iso) return '-';
             const d = new Date(iso);
-            const date = d.toLocaleDateString('tr-TR', { day:'2-digit', month:'2-digit', year:'numeric' });
-            const time = d.toLocaleTimeString('tr-TR', { hour:'2-digit', minute:'2-digit' });
-            return `${date} ${time}`;
+            return `${d.toLocaleDateString('tr-TR')} ${d.toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'})}`;
         }
 
-        // --- Auth ---
         document.getElementById('btn-login-action').onclick = () => {
             const val = document.getElementById('username-input').value.trim();
             if (val.length < 2) return;
@@ -292,7 +309,7 @@
                     const card = appData.cards[cardId];
                     if (card) {
                         const cardEl = document.createElement('div');
-                        cardEl.className = 'card-item bg-white p-6 rounded-3xl border border-slate-100 cursor-pointer shadow-sm';
+                        cardEl.className = 'card-item bg-white p-6 rounded-3xl border border-slate-100 shadow-sm';
                         cardEl.dataset.id = cardId;
                         cardEl.innerHTML = `
                             <div class="flex flex-col gap-3">
@@ -302,7 +319,7 @@
                                 </div>
                                 <h3 class="font-extrabold text-slate-800 text-sm leading-tight">${card.title}</h3>
                                 <div class="pt-3 border-t border-slate-50 flex justify-between items-center">
-                                    <span class="text-[9px] font-bold text-slate-400 uppercase">SON İŞLEM: ${formatDateTime(card.updatedAt)}</span>
+                                    <span class="text-[9px] font-bold text-slate-400 uppercase">İŞLEM: ${formatDateTime(card.updatedAt).split(' ')[1]}</span>
                                     <div title="${card.assignee || 'Atanmamış'}" class="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center text-[10px] font-bold text-rose-600 border border-rose-100">
                                         ${(card.assignee || '?').charAt(0).toUpperCase()}
                                     </div>
@@ -316,15 +333,9 @@
                 container.appendChild(colEl);
             });
 
-            // Yeni Sütun Ekleme Butonu
             const addColBtn = document.createElement('div');
             addColBtn.className = 'shrink-0 pt-2';
-            addColBtn.innerHTML = `
-                <button onclick="addNewColumn()" class="add-column-placeholder font-bold text-xs flex flex-col gap-2">
-                    <span class="text-2xl">+</span>
-                    <span>YENİ SÜTUN EKLE</span>
-                </button>
-            `;
+            addColBtn.innerHTML = `<button onclick="addNewColumn()" class="add-column-placeholder font-bold text-xs flex flex-col gap-2"><span class="text-2xl">+</span><span>SÜTUN EKLE</span></button>`;
             container.appendChild(addColBtn);
 
             initSortable();
@@ -333,17 +344,26 @@
         function initSortable() {
             document.querySelectorAll('.card-drop-zone').forEach(zone => {
                 new Sortable(zone, {
-                    group: 'tasks', animation: 200, ghostClass: 'bg-rose-50',
+                    group: 'tasks',
+                    animation: 250,
+                    ghostClass: 'sortable-ghost',
+                    dragClass: 'sortable-drag',
+                    onStart: () => {
+                        document.querySelectorAll('.card-drop-zone').forEach(z => z.classList.add('sorting-active'));
+                    },
                     onEnd: (evt) => {
+                        document.querySelectorAll('.card-drop-zone').forEach(z => z.classList.remove('sorting-active'));
                         const cardId = evt.item.dataset.id;
                         const fromColId = evt.from.dataset.colId;
                         const toColId = evt.to.dataset.colId;
                         
                         if (fromColId !== toColId) {
-                            const fromTitle = appData.columns[fromColId].title;
-                            const toTitle = appData.columns[toColId].title;
                             const now = new Date().toISOString();
-                            appData.cards[cardId].history.push({ type: 'move', msg: `${fromTitle} → ${toTitle}`, time: now });
+                            appData.cards[cardId].history.push({ 
+                                type: 'move', 
+                                msg: `${appData.columns[fromColId].title} → ${appData.columns[toColId].title}`, 
+                                time: now 
+                            });
                             appData.cards[cardId].updatedAt = now;
                         }
                         
@@ -356,7 +376,8 @@
             });
 
             new Sortable(document.getElementById('board-container'), {
-                animation: 200, draggable: '.column-width', handle: '.drag-handle',
+                animation: 250, draggable: '.column-width', handle: '.drag-handle',
+                ghostClass: 'opacity-50',
                 onEnd: () => {
                     appData.columnOrder = Array.from(document.getElementById('board-container').querySelectorAll('.column-width')).map(el => el.dataset.id);
                     persist();
@@ -371,15 +392,12 @@
             document.getElementById('task-tag-input').value = card?.tag || '';
             document.getElementById('task-assignee-input').value = card?.assignee || '';
             document.getElementById('task-deadline-input').value = card?.deadline || '';
-            
             document.getElementById('btn-task-delete').style.display = card ? 'flex' : 'none';
             document.getElementById('btn-show-history').style.display = card ? 'flex' : 'none';
-            
             const ts = document.getElementById('task-timestamps');
             if (card) {
                 ts.innerHTML = `<span>Giriş: <b>${formatDateTime(card.createdAt)}</b></span><span>Revizyon: <b>${formatDateTime(card.updatedAt)}</b></span>`;
             } else { ts.innerHTML = ''; }
-
             document.getElementById('modal-card').classList.replace('hidden', 'flex');
         };
 
@@ -389,7 +407,6 @@
             const title = document.getElementById('task-title-input').value.trim();
             if (!title) return;
             const now = new Date().toISOString();
-
             const payload = {
                 title, desc: document.getElementById('task-desc-input').value,
                 tag: document.getElementById('task-tag-input').value.trim().toUpperCase(),
@@ -397,7 +414,6 @@
                 deadline: document.getElementById('task-deadline-input').value,
                 updatedAt: now
             };
-
             if (currentTarget.cardId) {
                 Object.assign(appData.cards[currentTarget.cardId], payload);
                 appData.cards[currentTarget.cardId].history.push({ type: 'edit', msg: 'Bilgiler Güncellendi', time: now });
@@ -416,11 +432,7 @@
             [...card.history].reverse().forEach((log, idx) => {
                 const item = document.createElement('div');
                 item.className = 'relative pb-6 pl-2';
-                item.innerHTML = `
-                    <div class="timeline-dot ${idx === 0 ? 'active' : ''}"></div>
-                    <p class="text-[10px] font-bold text-slate-400">${formatDateTime(log.time)}</p>
-                    <p class="text-sm font-bold text-slate-700">${log.msg}</p>
-                `;
+                item.innerHTML = `<div class="timeline-dot ${idx === 0 ? 'active' : ''}"></div><p class="text-[10px] font-bold text-slate-400">${formatDateTime(log.time)}</p><p class="text-sm font-bold text-slate-700">${log.msg}</p>`;
                 list.appendChild(item);
             });
             document.getElementById('modal-history').classList.replace('hidden', 'flex');
@@ -429,13 +441,13 @@
         window.closeHistoryModal = () => document.getElementById('modal-history').classList.replace('flex', 'hidden');
 
         document.getElementById('btn-task-delete').onclick = () => {
-            if(!confirm("Bu görev silinecek. Emin misiniz?")) return;
+            if(!confirm("Silmek istediğinize emin misiniz?")) return;
             appData.columns[currentTarget.colId].cardIds = appData.columns[currentTarget.colId].cardIds.filter(id => id !== currentTarget.cardId);
             delete appData.cards[currentTarget.cardId];
             persist(); renderBoard(); closeModal();
         };
 
-        document.getElementById('btn-logout').onclick = () => { if(confirm("Oturum kapatılsın mı?")) { localStorage.clear(); location.reload(); } };
+        document.getElementById('btn-logout').onclick = () => { if(confirm("Çıkış yapılsın mı?")) { localStorage.clear(); location.reload(); } };
 
         if (appData.user) startApp();
     </script>
